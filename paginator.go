@@ -1,4 +1,4 @@
-package paginator
+package slicer
 
 import (
 	"net/url"
