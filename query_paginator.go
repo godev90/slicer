@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"godev90/validator/errors"
+	"github.com/godev90/validator/errors"
 
 	"gorm.io/gorm"
 )

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"godev90/validator/types"
+	"github.com/godev90/validator/types"
 )
 
 type (

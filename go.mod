@@ -1,13 +1,9 @@
-module godev90/slicer
+module github.com/godev90/slicer
 
 go 1.23.4
 
-replace (
-	godev90/validator => ../validator
-)
-
 require (
-	godev90/validator v0.0.0-00010101000000-000000000000
+	github.com/godev90/validator v0.1.1
 	gorm.io/gorm v1.30.0
 )
 
