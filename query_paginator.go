@@ -5,64 +5,28 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"regexp"
 	"strings"
 	"time"
 
+	"github.com/godev90/slicer/adapter"
 	"github.com/godev90/validator/errors"
-
-	"gorm.io/gorm"
 )
 
 type (
-	Tabler interface {
-		TableName() string
-	}
-
-	Paginator[T Tabler] interface {
+	Paginator[T adapter.Tabler] interface {
 		AllowedFields() map[string]string
-		DB() *gorm.DB
-		UseDB(*gorm.DB)
+		DB() adapter.QueryAdapter
+		UseDB(adapter.QueryAdapter)
 		Model() T
 		Items() []T
 		SetItems([]T)
 	}
 )
 
-func DefaultTablerAllowedFields(model Tabler) map[string]string {
-	t := reflect.TypeOf(model)
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-
-	fields := make(map[string]string)
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		jsonName := f.Tag.Get("json")
-		if jsonName == "" || jsonName == "-" {
-			jsonName = strings.ToLower(f.Name)
-		}
-		gormTag := f.Tag.Get("gorm")
-		var columnName string
-		if gormTag != "" {
-			for _, part := range strings.Split(gormTag, ";") {
-				if strings.HasPrefix(part, "column:") {
-					columnName = strings.TrimPrefix(part, "column:")
-					break
-				}
-			}
-		}
-		if columnName != "" && regexp.MustCompile(`^[a-zA-Z0-9_]+$`).MatchString(columnName) {
-			fields[jsonName] = columnName
-		}
-	}
-	return fields
-}
-
-func Page[T Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error) {
+func Page[T adapter.Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error) {
 	var (
 		model   = paginator.Model()
-		db      = paginator.DB().Model(model)
+		db      = paginator.DB().UseModel(model)
 		allowed = paginator.AllowedFields()
 
 		modelType = reflect.TypeOf(model)
@@ -169,7 +133,7 @@ func Page[T Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error)
 	defer cancel()
 
 	var total int64
-	countErr := db.WithContext(ctx).Session(&gorm.Session{}).Count(&total).Error
+	countErr := db.WithContext(ctx).Count(&total)
 	if countErr != nil {
 		if errors.Is(countErr, context.DeadlineExceeded) {
 			total = -1
@@ -188,7 +152,7 @@ func Page[T Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error)
 
 	items := paginator.Items()
 	db = db.Offset(opts.Offset).Limit(opts.Limit)
-	if err := db.Find(&items).Error; err != nil {
+	if err := db.Scan(&items); err != nil {
 		return PageData{Items: paginator.Items(),
 			Total: total,
 			Page:  opts.Page,
