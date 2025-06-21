@@ -24,6 +24,7 @@ type (
 		Where(query any, args ...any) QueryAdapter
 		Or(query any, args ...any) QueryAdapter
 		Select(selections []string) QueryAdapter
+		Clone() QueryAdapter
 	}
 )
 

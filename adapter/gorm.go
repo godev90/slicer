@@ -51,6 +51,10 @@ func (g *GormAdapter) Order(order string) QueryAdapter {
 	return &GormAdapter{db: g.db.Order(order), model: g.model}
 }
 
+func (g *GormAdapter) Clone() QueryAdapter {
+	return &GormAdapter{db: g.db.Session(&gorm.Session{NewDB: true}), model: g.model}
+}
+
 func (g *GormAdapter) Count(target *int64) error {
 	return g.db.Session(&gorm.Session{}).Count(target).Error
 }

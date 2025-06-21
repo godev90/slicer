@@ -43,10 +43,11 @@ func Page[T adapter.Tabler](paginator Paginator[T], opts QueryOptions) (PageData
 
 	for _, cmp := range opts.Comparisons {
 		if col, ok := allowed[cmp.Field]; ok {
-			parsed := cmp.Value
-
-			var foundField reflect.StructField
-			found := false
+			var (
+				parsed     = cmp.Value
+				found      = false
+				foundField reflect.StructField
+			)
 
 			for i := 0; i < modelType.NumField(); i++ {
 				field := modelType.Field(i)
@@ -91,18 +92,22 @@ func Page[T adapter.Tabler](paginator Paginator[T], opts QueryOptions) (PageData
 	}
 
 	if opts.Search != nil {
-		first := true
-		keyword := strings.ToLower(opts.Search.Keyword)
+		var (
+			useKeyword = false
+			keyword    = strings.ToLower(opts.Search.Keyword)
+			clone      = db.Clone()
+		)
+
 		for _, field := range opts.Search.Fields {
 			if col, ok := allowed[field]; ok {
 				cond := fmt.Sprintf("%s LIKE ?", col)
-				if first {
-					db = db.Where(cond, "%"+keyword+"%")
-					first = false
-				} else {
-					db = db.Or(cond, "%"+keyword+"%")
-				}
+				clone = clone.Or(cond, "%"+keyword+"%")
+				useKeyword = true
 			}
+		}
+
+		if useKeyword {
+			db = db.Where(clone)
 		}
 	}
 
