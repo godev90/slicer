@@ -15,8 +15,7 @@ import (
 type (
 	Paginator[T adapter.Tabler] interface {
 		AllowedFields() map[string]string
-		DB() adapter.QueryAdapter
-		UseDB(adapter.QueryAdapter)
+		Adapter() adapter.QueryAdapter
 		Model() T
 		Items() []T
 		SetItems([]T)
@@ -26,7 +25,7 @@ type (
 func Page[T adapter.Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error) {
 	var (
 		model   = paginator.Model()
-		db      = paginator.DB().UseModel(model)
+		db      = paginator.Adapter().UseModel(model)
 		allowed = paginator.AllowedFields()
 
 		modelType = reflect.TypeOf(model)
