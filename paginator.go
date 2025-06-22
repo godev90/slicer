@@ -142,13 +142,13 @@ func compare(fieldVal interface{}, strVal string, op ComparisonOp) bool {
 	case string:
 		return compareString(v, strVal, op)
 	case types.Integer:
-		return compareInt64(string(v), strVal, op)
+		return compareInt64(v.String(), strVal, op)
 	case types.Float:
-		return compareFloat64(string(v), strVal, op)
+		return compareFloat64(v.String(), strVal, op)
 	case types.Date:
-		return compareTime(time.Time(v), strVal, op)
+		return compareTime(v.Time(), strVal, op)
 	case types.Datetime:
-		return compareTime(time.Time(v), strVal, op)
+		return compareTime(v.Time(), strVal, op)
 	case int, int64:
 		return compareInt64(toString(v), strVal, op)
 	case float32, float64:
@@ -164,17 +164,15 @@ func compare(fieldVal interface{}, strVal string, op ComparisonOp) bool {
 func compareSort(a, b interface{}, desc bool) bool {
 	switch va := a.(type) {
 	case types.Integer:
-		ai, _ := strconv.ParseInt(string(va), 10, 64)
-		bi, _ := strconv.ParseInt(string(b.(types.Integer)), 10, 64)
-		return sortInt64(ai, bi, desc)
+		bi := b.(types.Integer)
+		return sortInt64(va.Int64(), bi.Int64(), desc)
 	case types.Float:
-		af, _ := strconv.ParseFloat(string(va), 64)
-		bf, _ := strconv.ParseFloat(string(b.(types.Float)), 64)
-		return sortFloat64(af, bf, desc)
+		bf := b.(types.Float)
+		return sortFloat64(va.Float64(), bf.Float64(), desc)
 	case types.Date:
-		return sortTime(time.Time(va), time.Time(b.(types.Date)), desc)
+		return sortTime(va.Time(), b.(types.Date).Time(), desc)
 	case types.Datetime:
-		return sortTime(time.Time(va), time.Time(b.(types.Datetime)), desc)
+		return sortTime(va.Time(), b.(types.Datetime).Time(), desc)
 	case string:
 		return sortString(va, b.(string), desc)
 	case int, int64:
