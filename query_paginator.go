@@ -22,7 +22,7 @@ type (
 	}
 )
 
-func Page[T adapter.Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error) {
+func QueryPage[T adapter.Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error) {
 	var (
 		model   = paginator.Model()
 		db      = paginator.Adapter().UseModel(model)
