@@ -57,3 +57,9 @@ func DefaultGormTablerAllowedFields(model Tabler) map[string]string {
 	}
 	return fields
 }
+
+var debug = false
+
+func DebugOn() {
+	debug = true
+}

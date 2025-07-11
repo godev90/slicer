@@ -4,13 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"net/http"
 	"reflect"
+	"regexp"
 	"strings"
+	"time"
+
+	"github.com/godev90/validator/errors"
 )
 
-// driverFlavor distinguishes parameter placeholder style between databases.
-// e.g. Postgres uses $1, $2 ... while MySQL uses ?
-// The Prepare() phase will map generic "?" placeholders to the correct style.
 type driverFlavor int
 
 const (
@@ -18,17 +21,21 @@ const (
 	flavorPostgres
 )
 
-// SqlQueryAdapter is a lightweight ORM-like query builder that satisfies QueryAdapter.
-// It uses standard database/sql underneath and supports both MySQL and PostgreSQL
-// by swapping placeholder styles at execution time.
-// All building state is immutable — chain calls clone the adapter to guarantee
-// thread-safety.
+func detectFlavor(db *sql.DB) driverFlavor {
+	t := strings.TrimPrefix(reflect.TypeOf(db.Driver()).String(), "*")
+	switch {
+	case strings.Contains(t, "pq"), strings.Contains(t, "pgx"), strings.Contains(t, "postgres"):
+		return flavorPostgres
+	default:
+		return flavorMySQL
+	}
+}
+
 type SqlQueryAdapter struct {
 	db     *sql.DB
-	flavor driverFlavor
 	ctx    context.Context
+	flavor driverFlavor
 
-	// query parts
 	table     string
 	fields    []string
 	wheres    []string
@@ -38,34 +45,33 @@ type SqlQueryAdapter struct {
 	orderBy   string
 	limit     *int
 	offset    *int
+
+	model Tabler
 }
 
-// NewSqlAdapter creates a new adapter based on *sql.DB.
-// The flavor is detected from the driver name, but can be overridden.
+// NewSqlAdapter wraps an existing *sql.DB.
 func NewSqlAdapter(db *sql.DB) *SqlQueryAdapter {
 	return &SqlQueryAdapter{
 		db:       db,
-		flavor:   detectFlavor(db),
 		ctx:      context.Background(),
+		flavor:   detectFlavor(db),
 		fields:   []string{"*"},
 		wheres:   []string{},
 		orWheres: []string{},
 	}
 }
 
-// clone makes a deep copy so chain calls do not mutate the original.
 func (q *SqlQueryAdapter) clone() *SqlQueryAdapter {
-	cp := *q
-	// copy slices to maintain immutability
+	cp := *q // salin nilai primitif
+	// buat duplikat slice agar truly-copy
 	cp.fields = append([]string(nil), q.fields...)
 	cp.wheres = append([]string(nil), q.wheres...)
 	cp.whereArgs = append([]any(nil), q.whereArgs...)
 	cp.orWheres = append([]string(nil), q.orWheres...)
 	cp.orArgs = append([]any(nil), q.orArgs...)
+	cp.model = q.model // <- penting: ikut disalin
 	return &cp
 }
-
-// --- QueryAdapter interface implementation ---
 
 func (q *SqlQueryAdapter) WithContext(ctx context.Context) QueryAdapter {
 	cp := q.clone()
@@ -80,20 +86,39 @@ func (q *SqlQueryAdapter) UseModel(m Tabler) QueryAdapter {
 }
 
 func (q *SqlQueryAdapter) Model() Tabler {
-	// Empty implementation — caller generally already has the model
-	return nil
-}
-
-func (q *SqlQueryAdapter) Select(s []string) QueryAdapter {
-	cp := q.clone()
-	if len(s) > 0 {
-		cp.fields = s
-	}
-	return cp
+	return q.model
 }
 
 func (q *SqlQueryAdapter) Where(cond any, args ...any) QueryAdapter {
 	cp := q.clone()
+
+	// Jika cond adalah sub-query SqlQueryAdapter
+	if sub, ok := cond.(*SqlQueryAdapter); ok {
+		// Bangun string kondisi sub-query
+		var sb strings.Builder
+		sb.WriteString("(")
+
+		if len(sub.wheres) > 0 {
+			sb.WriteString(strings.Join(sub.wheres, " AND "))
+		}
+		if len(sub.orWheres) > 0 {
+			if len(sub.wheres) > 0 {
+				sb.WriteString(" OR ")
+			}
+			sb.WriteString("(")
+			sb.WriteString(strings.Join(sub.orWheres, " OR "))
+			sb.WriteString(")")
+		}
+		sb.WriteString(")")
+
+		cp.wheres = append(cp.wheres, sb.String())
+		// gabungkan semua argumen sub-query
+		cp.whereArgs = append(cp.whereArgs, sub.whereArgs...)
+		cp.whereArgs = append(cp.whereArgs, sub.orArgs...)
+		return cp
+	}
+
+	// fallback biasa (string, fmt-able, dll.)
 	cp.wheres = append(cp.wheres, toString(cond))
 	cp.whereArgs = append(cp.whereArgs, args...)
 	return cp
@@ -106,9 +131,11 @@ func (q *SqlQueryAdapter) Or(cond any, args ...any) QueryAdapter {
 	return cp
 }
 
-func (q *SqlQueryAdapter) Order(order string) QueryAdapter {
+func (q *SqlQueryAdapter) Select(sel []string) QueryAdapter {
 	cp := q.clone()
-	cp.orderBy = order
+	if len(sel) > 0 {
+		cp.fields = sel
+	}
 	return cp
 }
 
@@ -124,24 +151,74 @@ func (q *SqlQueryAdapter) Offset(o int) QueryAdapter {
 	return cp
 }
 
+func (q *SqlQueryAdapter) Order(order string) QueryAdapter {
+	cp := q.clone()
+	cp.orderBy = order
+	return cp
+}
+
+func (q *SqlQueryAdapter) Clone() QueryAdapter { return q.clone() }
+
 func (q *SqlQueryAdapter) Count(target *int64) error {
-	query, args := q.build(true)
-	row := q.db.QueryRowContext(q.ctx, query, args...)
-	return row.Scan(target)
+	sqlStr, args := q.build(true)
+	return q.db.QueryRowContext(q.ctx, sqlStr, args...).Scan(target)
 }
 
 func (q *SqlQueryAdapter) Scan(dest any) error {
-	query, args := q.build(false)
-	rows, err := q.db.QueryContext(q.ctx, query, args...)
+	sqlStr, args := q.build(false)
+
+	if debug {
+		rendered := interpolate(sqlStr, args, q.flavor)
+		start := time.Now()
+		defer func() {
+			log.Printf("[sql] %s | %s\n", rendered, time.Since(start))
+		}()
+	}
+
+	rows, err := q.db.QueryContext(q.ctx, sqlStr, args...)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
-	// sql.Rows can scan into structs with sqlx, but here we keep it simple.
-	// Caller is responsible for rows.Scan in a custom manner.
-	switch d := dest.(type) {
-	case *[]map[string]any:
-		cols, _ := rows.Columns()
+
+	cols, _ := rows.Columns()
+	val := reflect.ValueOf(dest)
+	if val.Kind() != reflect.Ptr || val.IsNil() {
+		return fmt.Errorf("adapter: dest must be non-nil pointer")
+	}
+
+	switch val.Elem().Kind() {
+	case reflect.Slice:
+		slice := val.Elem()
+		elemTyp := slice.Type().Elem()
+		for rows.Next() {
+			elemPtr := reflect.New(elemTyp)
+			targets, e := makeScanTargets(elemPtr.Interface(), cols)
+			if e != nil {
+				return e
+			}
+			if err := rows.Scan(targets...); err != nil {
+				return err
+			}
+			slice = reflect.Append(slice, elemPtr.Elem())
+		}
+		val.Elem().Set(slice)
+		return rows.Err()
+
+	case reflect.Struct:
+		if rows.Next() {
+			targets, e := makeScanTargets(dest, cols)
+			if e != nil {
+				return e
+			}
+			if err := rows.Scan(targets...); err != nil {
+				return err
+			}
+		}
+		return rows.Err()
+	}
+
+	if mp, ok := dest.(*[]map[string]any); ok {
 		for rows.Next() {
 			vals := make([]any, len(cols))
 			ptrs := make([]any, len(cols))
@@ -151,40 +228,67 @@ func (q *SqlQueryAdapter) Scan(dest any) error {
 			if err := rows.Scan(ptrs...); err != nil {
 				return err
 			}
-			m := map[string]any{}
+			rec := map[string]any{}
 			for i, c := range cols {
-				m[c] = vals[i]
+				rec[c] = vals[i]
 			}
-			*d = append(*d, m)
+			*mp = append(*mp, rec)
 		}
 		return rows.Err()
-	default:
-		return fmt.Errorf("Scan: unsupported destination type %T", dest)
+	}
+
+	return errUnsupported
+}
+
+var errUnsupported = errors.New(fmt.Errorf("adapter: Scan unsupported destination"), &errors.ErrAttr{
+	Code: http.StatusInternalServerError,
+})
+
+func interpolate(sqlStr string, args []any, flavor driverFlavor) string {
+	var out strings.Builder
+	argIdx := 0
+
+	quote := func(a any) string {
+		switch v := a.(type) {
+		case string:
+			return "'" + strings.ReplaceAll(v, "'", "''") + "'" // escape '
+		case time.Time:
+			return "'" + v.Format("2006-01-02 15:04:05") + "'"
+		default:
+			return fmt.Sprint(v)
+		}
+	}
+
+	switch flavor {
+
+	case flavorPostgres: // ganti $1, $2, ...
+		re := regexp.MustCompile(`\$\d+`)
+		out.WriteString(re.ReplaceAllStringFunc(sqlStr, func(_ string) string {
+			if argIdx >= len(args) {
+				return "?"
+			}
+			val := quote(args[argIdx])
+			argIdx++
+			return val
+		}))
+		return out.String()
+
+	default: // MySQL: ganti ?
+		for i := 0; i < len(sqlStr); i++ {
+			if sqlStr[i] == '?' && argIdx < len(args) {
+				out.WriteString(quote(args[argIdx]))
+				argIdx++
+			} else {
+				out.WriteByte(sqlStr[i])
+			}
+		}
+		return out.String()
 	}
 }
 
-func (q *SqlQueryAdapter) Clone() QueryAdapter {
-	return q.clone()
-}
-
-// --- helpers ---
-
-// detectFlavor inspects the database driver to determine if it is
-func detectFlavor(db *sql.DB) driverFlavor {
-	t := reflect.TypeOf(db.Driver()).String() // includes leading '*'
-	t = strings.TrimPrefix(t, "*")
-	switch {
-	case strings.Contains(t, "pq"), strings.Contains(t, "pgx"), strings.Contains(t, "postgres"):
-		return flavorPostgres
-	default:
-		return flavorMySQL
-	}
-}
-
-func (q *SqlQueryAdapter) build(countMode bool) (string, []any) {
+func (q *SqlQueryAdapter) build(count bool) (string, []any) {
 	var sb strings.Builder
-
-	if countMode {
+	if count {
 		sb.WriteString("SELECT COUNT(1) FROM ")
 	} else {
 		sb.WriteString("SELECT ")
@@ -194,7 +298,6 @@ func (q *SqlQueryAdapter) build(countMode bool) (string, []any) {
 	sb.WriteString(q.table)
 
 	args := make([]any, 0, len(q.whereArgs)+len(q.orArgs))
-
 	if len(q.wheres) > 0 || len(q.orWheres) > 0 {
 		sb.WriteString(" WHERE ")
 		if len(q.wheres) > 0 {
@@ -211,48 +314,123 @@ func (q *SqlQueryAdapter) build(countMode bool) (string, []any) {
 			args = append(args, q.orArgs...)
 		}
 	}
-
-	if q.orderBy != "" && !countMode {
+	if q.orderBy != "" && !count {
 		sb.WriteString(" ORDER BY ")
 		sb.WriteString(q.orderBy)
 	}
-
-	if q.limit != nil && !countMode {
+	if q.limit != nil && !count {
 		sb.WriteString(" LIMIT ")
 		sb.WriteString(fmt.Sprint(*q.limit))
 	}
-
-	if q.offset != nil && !countMode {
+	if q.offset != nil && !count {
 		sb.WriteString(" OFFSET ")
 		sb.WriteString(fmt.Sprint(*q.offset))
 	}
 
-	// translate placeholders if needed
-	query := sb.String()
+	sqlStr := sb.String()
 	if q.flavor == flavorPostgres {
 		// replace ? with $n
 		var idx int
 		var b strings.Builder
-		for i := 0; i < len(query); i++ {
-			if query[i] == '?' {
+		for i := 0; i < len(sqlStr); i++ {
+			if sqlStr[i] == '?' {
 				idx++
 				b.WriteString("$")
 				b.WriteString(fmt.Sprint(idx))
 			} else {
-				b.WriteByte(query[i])
+				b.WriteByte(sqlStr[i])
 			}
 		}
-		query = b.String()
+		sqlStr = b.String()
 	}
-
-	return query, args
+	return sqlStr, args
 }
 
-func toString(cond any) string {
-	switch v := cond.(type) {
+func makeScanTargets(dest any, cols []string) ([]any, error) {
+	val := reflect.ValueOf(dest)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	if val.Kind() != reflect.Struct {
+		return nil, errUnsupported
+	}
+	fieldMap := buildFieldMap(val.Type())
+	targets := make([]any, len(cols))
+	for i, c := range cols {
+		if idx, ok := fieldMap[strings.ToLower(c)]; ok {
+			targets[i] = val.Field(idx).Addr().Interface()
+		} else {
+			var dummy any
+			targets[i] = &dummy
+		}
+	}
+	return targets, nil
+}
+
+func buildFieldMap(t reflect.Type) map[string]int {
+	m := map[string]int{}
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		if f.PkgPath != "" {
+			continue
+		}
+		if f.Tag.Get("gorm") == "-" || f.Tag.Get("sql") == "-" || f.Tag.Get("column") == "-" {
+			continue
+		}
+		col, _ := parseColumnTag(f)
+		if col == "" {
+			col = toSnake(f.Name)
+		}
+		m[strings.ToLower(col)] = i
+	}
+	return m
+}
+
+func parseColumnTag(f reflect.StructField) (string, bool) {
+	extract := func(tag string) (string, bool) {
+		if strings.Contains(tag, "column:") {
+			for _, p := range strings.Split(tag, ";") {
+				if strings.HasPrefix(p, "column:") {
+					return strings.TrimPrefix(p, "column:"), strings.Contains(tag, "primary")
+				}
+			}
+		} else if !strings.Contains(tag, ":") {
+			return tag, false
+		}
+		return "", false
+	}
+	if tag := f.Tag.Get("gorm"); tag != "" {
+		if col, pk := extract(tag); col != "" {
+			return col, pk
+		}
+	}
+	if tag := f.Tag.Get("sql"); tag != "" {
+		if col, pk := extract(tag); col != "" {
+			return col, pk
+		}
+	}
+	if tag := f.Tag.Get("column"); tag != "" {
+		return tag, false
+	}
+	return "", false
+}
+
+func toSnake(s string) string {
+	var out []rune
+	for i, r := range s {
+		if i > 0 && r >= 'A' && r <= 'Z' {
+			out = append(out, '_')
+		}
+		out = append(out, r)
+	}
+	return strings.ToLower(string(out))
+}
+
+func toString(v any) string {
+	switch t := v.(type) {
 	case string:
-		return v
+		return t
 	default:
-		return fmt.Sprint(v)
+		return fmt.Sprint(t)
 	}
 }
