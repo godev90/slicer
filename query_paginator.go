@@ -8,21 +8,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/godev90/slicer/adapter"
+	"github.com/godev90/orm"
 	"github.com/godev90/validator/errors"
 )
 
 type (
-	Paginator[T adapter.Tabler] interface {
+	Paginator[T orm.Tabler] interface {
 		AllowedFields() map[string]string
-		Adapter() adapter.QueryAdapter
+		Adapter() orm.QueryAdapter
 		Model() T
 		Items() []T
 		SetItems([]T)
 	}
 )
 
-func QueryPage[T adapter.Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error) {
+func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error) {
 	var (
 		model   = paginator.Model()
 		db      = paginator.Adapter().UseModel(model)
