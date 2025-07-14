@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/godev90/validator/types"
+	"github.com/godev90/validator/typedef"
 )
 
 type (
@@ -141,13 +141,13 @@ func compare(fieldVal interface{}, strVal string, op ComparisonOp) bool {
 	switch v := fieldVal.(type) {
 	case string:
 		return compareString(v, strVal, op)
-	case types.Integer:
+	case typedef.Integer:
 		return compareInt64(v.String(), strVal, op)
-	case types.Float:
+	case typedef.Float:
 		return compareFloat64(v.String(), strVal, op)
-	case types.Date:
+	case typedef.Date:
 		return compareTime(v.Time(), strVal, op)
-	case types.Datetime:
+	case typedef.Datetime:
 		return compareTime(v.Time(), strVal, op)
 	case int, int64:
 		return compareInt64(toString(v), strVal, op)
@@ -163,16 +163,16 @@ func compare(fieldVal interface{}, strVal string, op ComparisonOp) bool {
 // Sorting comparator (used in sort.SliceStable)
 func compareSort(a, b interface{}, desc bool) bool {
 	switch va := a.(type) {
-	case types.Integer:
-		bi := b.(types.Integer)
+	case typedef.Integer:
+		bi := b.(typedef.Integer)
 		return sortInt64(va.Int64(), bi.Int64(), desc)
-	case types.Float:
-		bf := b.(types.Float)
+	case typedef.Float:
+		bf := b.(typedef.Float)
 		return sortFloat64(va.Float64(), bf.Float64(), desc)
-	case types.Date:
-		return sortTime(va.Time(), b.(types.Date).Time(), desc)
-	case types.Datetime:
-		return sortTime(va.Time(), b.(types.Datetime).Time(), desc)
+	case typedef.Date:
+		return sortTime(va.Time(), b.(typedef.Date).Time(), desc)
+	case typedef.Datetime:
+		return sortTime(va.Time(), b.(typedef.Datetime).Time(), desc)
 	case string:
 		return sortString(va, b.(string), desc)
 	case int, int64:

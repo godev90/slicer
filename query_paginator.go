@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/godev90/orm"
-	"github.com/godev90/validator/errors"
+	"github.com/godev90/validator/faults"
 )
 
 type (
@@ -139,7 +139,7 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 	var total int64
 	countErr := db.WithContext(ctx).Count(&total)
 	if countErr != nil {
-		if errors.Is(countErr, context.DeadlineExceeded) {
+		if faults.Is(countErr, context.DeadlineExceeded) {
 			total = -1
 		} else {
 			return PageData{
@@ -147,7 +147,7 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 				Total: 0,
 				Page:  opts.Page,
 				Limit: opts.Limit,
-				LastError: errors.New(countErr, &errors.ErrAttr{
+				LastError: faults.New(countErr, &faults.ErrAttr{
 					Code: http.StatusInternalServerError,
 				}),
 			}, countErr
@@ -161,7 +161,7 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 			Total: total,
 			Page:  opts.Page,
 			Limit: opts.Limit,
-			LastError: errors.New(err, &errors.ErrAttr{
+			LastError: faults.New(err, &faults.ErrAttr{
 				Code: http.StatusInternalServerError,
 			})}, err
 	}

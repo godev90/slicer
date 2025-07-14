@@ -3,8 +3,8 @@ module github.com/godev90/slicer
 go 1.23.4
 
 require (
-	github.com/godev90/orm v0.1.3
-	github.com/godev90/validator v0.1.6
+	github.com/godev90/orm v0.1.4
+	github.com/godev90/validator v0.1.7
 )
 
 require (
