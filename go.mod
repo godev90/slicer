@@ -5,6 +5,7 @@ go 1.23.4
 require (
 	github.com/godev90/orm v0.1.4
 	github.com/godev90/validator v0.1.11
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
