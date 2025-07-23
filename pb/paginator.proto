@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/struct.proto";
-
 package slicer.v1;
 
 option go_package = "github.com/godev90/slicer/pb;slicerpb";
@@ -36,5 +34,5 @@ message PageData {
   int64 total = 1;
   int32 page = 2;
   int32 limit = 3;
-  repeated google.protobuf.Struct items = 4;
+  bytes items = 4;
 }

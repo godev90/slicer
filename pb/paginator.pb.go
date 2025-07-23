@@ -9,7 +9,6 @@ package slicerpb
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -283,7 +282,7 @@ type PageData struct {
 	Total         int64                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
 	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
 	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
-	Items         []*structpb.Struct     `protobuf:"bytes,4,rep,name=items,proto3" json:"items,omitempty"`
+	Items         []byte                 `protobuf:"bytes,4,opt,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -339,7 +338,7 @@ func (x *PageData) GetLimit() int32 {
 	return 0
 }
 
-func (x *PageData) GetItems() []*structpb.Struct {
+func (x *PageData) GetItems() []byte {
 	if x != nil {
 		return x.Items
 	}
@@ -350,7 +349,7 @@ var File_paginator_proto protoreflect.FileDescriptor
 
 const file_paginator_proto_rawDesc = "" +
 	"\n" +
-	"\x0fpaginator.proto\x12\tslicer.v1\x1a\x1cgoogle/protobuf/struct.proto\"\xe5\x02\n" +
+	"\x0fpaginator.proto\x12\tslicer.v1\"\xe5\x02\n" +
 	"\fQueryOptions\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\rR\x04page\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\rR\x05limit\x12(\n" +
@@ -371,12 +370,12 @@ const file_paginator_proto_rawDesc = "" +
 	"\x10ComparisonFilter\x12\x14\n" +
 	"\x05field\x18\x01 \x01(\tR\x05field\x12\x0e\n" +
 	"\x02op\x18\x02 \x01(\tR\x02op\x12\x14\n" +
-	"\x05value\x18\x03 \x01(\tR\x05value\"y\n" +
+	"\x05value\x18\x03 \x01(\tR\x05value\"`\n" +
 	"\bPageData\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x14\n" +
-	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12-\n" +
-	"\x05items\x18\x04 \x03(\v2\x17.google.protobuf.StructR\x05itemsB'Z%github.com/godev90/slicer/pb;slicerpbb\x06proto3"
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12\x14\n" +
+	"\x05items\x18\x04 \x01(\fR\x05itemsB'Z%github.com/godev90/slicer/pb;slicerpbb\x06proto3"
 
 var (
 	file_paginator_proto_rawDescOnce sync.Once
@@ -398,19 +397,17 @@ var file_paginator_proto_goTypes = []any{
 	(*ComparisonFilter)(nil), // 3: slicer.v1.ComparisonFilter
 	(*PageData)(nil),         // 4: slicer.v1.PageData
 	nil,                      // 5: slicer.v1.QueryOptions.FiltersEntry
-	(*structpb.Struct)(nil),  // 6: google.protobuf.Struct
 }
 var file_paginator_proto_depIdxs = []int32{
 	1, // 0: slicer.v1.QueryOptions.sort:type_name -> slicer.v1.SortField
 	2, // 1: slicer.v1.QueryOptions.search:type_name -> slicer.v1.SearchQuery
 	5, // 2: slicer.v1.QueryOptions.filters:type_name -> slicer.v1.QueryOptions.FiltersEntry
 	3, // 3: slicer.v1.QueryOptions.comparisons:type_name -> slicer.v1.ComparisonFilter
-	6, // 4: slicer.v1.PageData.items:type_name -> google.protobuf.Struct
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_paginator_proto_init() }

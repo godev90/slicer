@@ -1,10 +1,9 @@
 package slicer
 
 import (
-	"fmt"
+	"encoding/json"
 
 	slicerpb "github.com/godev90/slicer/pb"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
@@ -61,7 +60,7 @@ func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 	for _, c := range pb.Comparisons {
 		comparisons = append(comparisons, ComparisonFilter{
 			Field: c.Field,
-			Op:    ComparisonOp(c.Op), // 👈 Cast back to ComparisonOp
+			Op:    ComparisonOp(c.Op),
 			Value: c.Value,
 		})
 	}
@@ -85,49 +84,35 @@ func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 	}
 }
 
-func (data PageData) DataToProto() (*slicerpb.PageData, error) {
-	items := []map[string]any{}
+func (data PageData) ToProto() (*slicerpb.PageData, error) {
+	jbytes, err := json.Marshal(data.Items)
 
-	switch v := data.Items.(type) {
-	case []map[string]any:
-		items = v
-	case []any:
-		for _, item := range v {
-			if m, ok := item.(map[string]any); ok {
-				items = append(items, m)
-			}
-		}
-	default:
-		return nil, fmt.Errorf("unsupported item type: %T", data.Items)
-	}
-
-	structs := make([]*structpb.Struct, 0, len(items))
-	for _, item := range items {
-		s, err := structpb.NewStruct(item)
-		if err != nil {
-			return nil, err
-		}
-		structs = append(structs, s)
+	if err != nil {
+		return nil, err
 	}
 
 	return &slicerpb.PageData{
-		Total: data.Total,
 		Page:  int32(data.Page),
 		Limit: int32(data.Limit),
-		Items: structs,
+		Total: data.Total,
+		Items: jbytes,
 	}, nil
 }
 
-func PageFromProto(pb *slicerpb.PageData) PageData {
-	items := make([]map[string]any, 0, len(pb.Items))
-	for _, s := range pb.Items {
-		items = append(items, s.AsMap())
+func PageFromProto(protoData *slicerpb.PageData, destSchema any) (*PageData, error) {
+	if protoData == nil {
+		return nil, nil
 	}
 
-	return PageData{
-		Items: items,
-		Total: pb.Total,
-		Page:  int(pb.Page),
-		Limit: int(pb.Limit),
+	err := json.Unmarshal(protoData.Items, destSchema)
+	if err != nil {
+		return nil, err
 	}
+
+	return &PageData{
+		Page:  int(protoData.Page),
+		Limit: int(protoData.Limit),
+		Total: protoData.Total,
+		Items: destSchema,
+	}, nil
 }
