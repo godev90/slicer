@@ -278,7 +278,7 @@ func (x *ComparisonFilter) GetValue() string {
 	return ""
 }
 
-type PageResult struct {
+type PageData struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Total         int64                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
 	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
@@ -288,20 +288,20 @@ type PageResult struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PageResult) Reset() {
-	*x = PageResult{}
+func (x *PageData) Reset() {
+	*x = PageData{}
 	mi := &file_paginator_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PageResult) String() string {
+func (x *PageData) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PageResult) ProtoMessage() {}
+func (*PageData) ProtoMessage() {}
 
-func (x *PageResult) ProtoReflect() protoreflect.Message {
+func (x *PageData) ProtoReflect() protoreflect.Message {
 	mi := &file_paginator_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -313,33 +313,33 @@ func (x *PageResult) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PageResult.ProtoReflect.Descriptor instead.
-func (*PageResult) Descriptor() ([]byte, []int) {
+// Deprecated: Use PageData.ProtoReflect.Descriptor instead.
+func (*PageData) Descriptor() ([]byte, []int) {
 	return file_paginator_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *PageResult) GetTotal() int64 {
+func (x *PageData) GetTotal() int64 {
 	if x != nil {
 		return x.Total
 	}
 	return 0
 }
 
-func (x *PageResult) GetPage() int32 {
+func (x *PageData) GetPage() int32 {
 	if x != nil {
 		return x.Page
 	}
 	return 0
 }
 
-func (x *PageResult) GetLimit() int32 {
+func (x *PageData) GetLimit() int32 {
 	if x != nil {
 		return x.Limit
 	}
 	return 0
 }
 
-func (x *PageResult) GetItems() []*structpb.Struct {
+func (x *PageData) GetItems() []*structpb.Struct {
 	if x != nil {
 		return x.Items
 	}
@@ -371,9 +371,8 @@ const file_paginator_proto_rawDesc = "" +
 	"\x10ComparisonFilter\x12\x14\n" +
 	"\x05field\x18\x01 \x01(\tR\x05field\x12\x0e\n" +
 	"\x02op\x18\x02 \x01(\tR\x02op\x12\x14\n" +
-	"\x05value\x18\x03 \x01(\tR\x05value\"{\n" +
-	"\n" +
-	"PageResult\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\tR\x05value\"y\n" +
+	"\bPageData\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x14\n" +
 	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12-\n" +
@@ -397,7 +396,7 @@ var file_paginator_proto_goTypes = []any{
 	(*SortField)(nil),        // 1: slicer.v1.SortField
 	(*SearchQuery)(nil),      // 2: slicer.v1.SearchQuery
 	(*ComparisonFilter)(nil), // 3: slicer.v1.ComparisonFilter
-	(*PageResult)(nil),       // 4: slicer.v1.PageResult
+	(*PageData)(nil),         // 4: slicer.v1.PageData
 	nil,                      // 5: slicer.v1.QueryOptions.FiltersEntry
 	(*structpb.Struct)(nil),  // 6: google.protobuf.Struct
 }
@@ -406,7 +405,7 @@ var file_paginator_proto_depIdxs = []int32{
 	2, // 1: slicer.v1.QueryOptions.search:type_name -> slicer.v1.SearchQuery
 	5, // 2: slicer.v1.QueryOptions.filters:type_name -> slicer.v1.QueryOptions.FiltersEntry
 	3, // 3: slicer.v1.QueryOptions.comparisons:type_name -> slicer.v1.ComparisonFilter
-	6, // 4: slicer.v1.PageResult.items:type_name -> google.protobuf.Struct
+	6, // 4: slicer.v1.PageData.items:type_name -> google.protobuf.Struct
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name

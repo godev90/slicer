@@ -32,7 +32,7 @@ message ComparisonFilter {
   string value = 3;
 }
 
-message PageResult {
+message PageData {
   int64 total = 1;
   int32 page = 2;
   int32 limit = 3;

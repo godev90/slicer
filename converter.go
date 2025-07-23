@@ -85,7 +85,7 @@ func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 	}
 }
 
-func (data PageData) DataToProto() (*slicerpb.PageResult, error) {
+func (data PageData) DataToProto() (*slicerpb.PageData, error) {
 	items := []map[string]any{}
 
 	switch v := data.Items.(type) {
@@ -110,7 +110,7 @@ func (data PageData) DataToProto() (*slicerpb.PageResult, error) {
 		structs = append(structs, s)
 	}
 
-	return &slicerpb.PageResult{
+	return &slicerpb.PageData{
 		Total: data.Total,
 		Page:  int32(data.Page),
 		Limit: int32(data.Limit),
@@ -118,7 +118,7 @@ func (data PageData) DataToProto() (*slicerpb.PageResult, error) {
 	}, nil
 }
 
-func PageFromProto(pb *slicerpb.PageResult) PageData {
+func PageFromProto(pb *slicerpb.PageData) PageData {
 	items := make([]map[string]any, 0, len(pb.Items))
 	for _, s := range pb.Items {
 		items = append(items, s.AsMap())
