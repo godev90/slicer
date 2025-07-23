@@ -1,7 +1,7 @@
 github.com/godev90/orm v0.1.4 h1:V6NE+dbom5FmS0HKg+gzwTnROaXnToPBcv3urmcam4g=
 github.com/godev90/orm v0.1.4/go.mod h1:3KnDc6KLU8cEezyh3ujLHnLhoOfW6zLol6Ts1fGSXV8=
-github.com/godev90/validator v0.1.7 h1:FI3FeU0ci6lVPb9k8fyfh0AU/gr/3Ipf+XwLepa979k=
-github.com/godev90/validator v0.1.7/go.mod h1:gwr0LYqjCqykYcXLREmS7plWlpWk+Ii2y47GMsynQEQ=
+github.com/godev90/validator v0.1.11 h1:hivTw9/qguOZGy4KCuBbNxMn6IFIMNJdeS3qoKgftCQ=
+github.com/godev90/validator v0.1.11/go.mod h1:gwr0LYqjCqykYcXLREmS7plWlpWk+Ii2y47GMsynQEQ=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.5 h1:/o9tlHleP7gOFmsnYNz3RGnqzefHA47wQpKrrdTIwXQ=
