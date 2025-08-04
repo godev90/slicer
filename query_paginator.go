@@ -105,13 +105,18 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 	if opts.Search != nil {
 		var (
 			useKeyword = false
-			keyword    = strings.ToLower(opts.Search.Keyword)
+			keyword    = opts.Search.Keyword
 			clone      = db.Clone()
 		)
 
 		for _, field := range opts.Search.Fields {
 			if col, ok := allowed[field]; ok {
 				cond := fmt.Sprintf("%s LIKE ?", col)
+
+				if db.Driver() == orm.FlavorPostgres {
+					cond = fmt.Sprintf("%s ILIKE ?", col)
+				}
+
 				clone = clone.Or(cond, "%"+keyword+"%")
 				useKeyword = true
 			}
