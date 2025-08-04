@@ -1,5 +1,5 @@
-github.com/godev90/orm v0.1.13 h1:qVLi9s6ypq2XDfayGq7yVHVu6RNDsdqH3vAUNyRAihs=
-github.com/godev90/orm v0.1.13/go.mod h1:FH/HSEhS1R5yqjjVcWh8Upvfe4jZLcTz+2E7jDfzj98=
+github.com/godev90/orm v0.1.14 h1:fsXUosuufhabPfKa6Aa5oIUzeDPQgI6lL392v+fJKHU=
+github.com/godev90/orm v0.1.14/go.mod h1:FH/HSEhS1R5yqjjVcWh8Upvfe4jZLcTz+2E7jDfzj98=
 github.com/godev90/validator v0.1.11 h1:hivTw9/qguOZGy4KCuBbNxMn6IFIMNJdeS3qoKgftCQ=
 github.com/godev90/validator v0.1.11/go.mod h1:gwr0LYqjCqykYcXLREmS7plWlpWk+Ii2y47GMsynQEQ=
 github.com/google/go-cmp v0.5.5 h1:Khx7svrCpmxxtHBq5j2mp/xVjsi8hQMfNLvJFAlrGgU=
