@@ -177,6 +177,10 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 			})}, err
 	}
 
+	if items == nil {
+		items = []T{}
+	}
+
 	paginator.SetItems(items)
 
 	return PageData{Items: paginator.Items(), Total: total, Page: opts.Page, Limit: opts.Limit}, nil

@@ -76,6 +76,7 @@ func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 	return QueryOptions{
 		Page:        int(pb.Page),
 		Limit:       int(pb.Limit),
+		Offset:      int(pb.Page-1) * int(pb.Limit),
 		Sort:        sort,
 		Search:      search,
 		Select:      pb.Select,
