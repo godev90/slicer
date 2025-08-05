@@ -114,6 +114,16 @@ func ParseOpts(values url.Values) QueryOptions {
 	return opts
 }
 
+func ErrorPage(err error, opts QueryOptions) PageData {
+	return PageData{
+		LastError: err,
+		Items:     []string{},
+		Total:     0,
+		Page:      1,
+		Limit:     opts.Limit,
+	}
+}
+
 // findFieldByColumn returns the struct field by matching the JSON tag or field name
 func findFieldByColumn(v reflect.Value, column string) reflect.Value {
 	if v.Kind() == reflect.Ptr {
