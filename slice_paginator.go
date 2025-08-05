@@ -31,6 +31,8 @@ func (p *SlicePaginator[T]) SetItems(items []T) {
 func SlicePage[T any](p *SlicePaginator[T], opts QueryOptions) (PageData, error) {
 	var filtered []T
 
+	opts.Offset = (opts.Page - 1) * opts.Limit
+
 	// 1. Apply ComparisonFilters
 	for _, item := range p.source {
 		match := true
@@ -117,6 +119,10 @@ func SlicePage[T any](p *SlicePaginator[T], opts QueryOptions) (PageData, error)
 	}
 	pageItems := filtered[start:end]
 	p.SetItems(pageItems)
+
+	if p.Items() == nil {
+		p.SetItems([]T{})
+	}
 
 	return PageData{
 		Items: p.Items(),
