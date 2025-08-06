@@ -20,6 +20,7 @@ type (
 		Search      *SearchQuery
 		Filters     map[string]string
 		Select      []string
+		GroupBy     []string
 		Comparisons []ComparisonFilter
 	}
 
@@ -96,9 +97,14 @@ func ParseOpts(values url.Values) QueryOptions {
 	if sel := values.Get("select"); sel != "" {
 		opts.Select = strings.Split(sel, ",")
 	}
+	if group := values.Get("group"); group != "" {
+		opts.GroupBy = strings.Split(group, ",")
+		// force selection equal to group. this prevent full group by only
+		opts.Select = strings.Split(group, ",")
+	}
 
 	for key, val := range values {
-		if key == "page" || key == "limit" || key == "sort" || key == "search" || key == "keyword" || key == "select" {
+		if key == "page" || key == "limit" || key == "sort" || key == "search" || key == "keyword" || key == "select" || key == "group" {
 			continue
 		}
 		if matches := regexp.MustCompile(`^([a-zA-Z0-9_]+)\[(gt|gte|lt|lte|eq)\]$`).FindStringSubmatch(key); len(matches) == 3 {

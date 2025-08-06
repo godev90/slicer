@@ -139,6 +139,18 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 		}
 	}
 
+	if len(opts.GroupBy) > 0 {
+		columns := []string{}
+		for _, field := range opts.GroupBy {
+			if col, ok := allowed[field]; ok {
+				columns = append(columns, col)
+			}
+		}
+		if len(columns) > 0 {
+			db = db.GroupBy(columns)
+		}
+	}
+
 	for _, s := range opts.Sort {
 		if col, ok := allowed[s.Field]; ok {
 			if s.Desc {
