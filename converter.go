@@ -32,6 +32,14 @@ func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
 		}
 	}
 
+	if q.Limit == 0 {
+		q.Limit = 10
+	}
+
+	if q.Page == 0 {
+		q.Page = 1
+	}
+
 	return &slicerpb.QueryOptions{
 		Page:        uint32(q.Page),
 		Limit:       uint32(q.Limit),
@@ -46,7 +54,18 @@ func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
 
 func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 	if pb == nil {
-		return QueryOptions{}
+		return QueryOptions{
+			Limit: 10,
+			Page:  1,
+		}
+	}
+
+	if pb.Limit == 0 {
+		pb.Limit = 10
+	}
+
+	if pb.Page == 0 {
+		pb.Page = 1
 	}
 
 	sort := make([]SortField, 0, len(pb.Sort))
@@ -94,9 +113,20 @@ func (data PageData) ToProto() (*slicerpb.PageData, error) {
 		return nil, err
 	}
 
+	page := int32(data.Page)
+	limit := int32(data.Limit)
+
+	if page == 0 {
+		page = 1
+	}
+
+	if limit == 0 {
+		limit = 10
+	}
+
 	return &slicerpb.PageData{
-		Page:  int32(data.Page),
-		Limit: int32(data.Limit),
+		Page:  page,
+		Limit: limit,
 		Total: data.Total,
 		Items: jbytes,
 	}, nil
@@ -112,9 +142,20 @@ func PageFromProto(protoData *slicerpb.PageData, destSchema any) (*PageData, err
 		return nil, err
 	}
 
+	page := protoData.Page
+	limit := protoData.Limit
+
+	if page == 0 {
+		page = 1
+	}
+
+	if limit == 0 {
+		limit = 10
+	}
+
 	return &PageData{
-		Page:  int(protoData.Page),
-		Limit: int(protoData.Limit),
+		Page:  int(page),
+		Limit: int(limit),
 		Total: protoData.Total,
 		Items: destSchema,
 	}, nil
