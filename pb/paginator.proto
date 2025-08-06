@@ -12,6 +12,7 @@ message QueryOptions {
   repeated string select = 5;
   map<string, string> filters = 6;
   repeated ComparisonFilter comparisons = 7;
+  repeated string group_by = 8;
 }
 
 message SortField {

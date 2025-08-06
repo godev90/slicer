@@ -30,6 +30,7 @@ type QueryOptions struct {
 	Select        []string               `protobuf:"bytes,5,rep,name=select,proto3" json:"select,omitempty"`
 	Filters       map[string]string      `protobuf:"bytes,6,rep,name=filters,proto3" json:"filters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	Comparisons   []*ComparisonFilter    `protobuf:"bytes,7,rep,name=comparisons,proto3" json:"comparisons,omitempty"`
+	GroupBy       []string               `protobuf:"bytes,8,rep,name=group_by,json=groupBy,proto3" json:"group_by,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -109,6 +110,13 @@ func (x *QueryOptions) GetFilters() map[string]string {
 func (x *QueryOptions) GetComparisons() []*ComparisonFilter {
 	if x != nil {
 		return x.Comparisons
+	}
+	return nil
+}
+
+func (x *QueryOptions) GetGroupBy() []string {
+	if x != nil {
+		return x.GroupBy
 	}
 	return nil
 }
@@ -349,7 +357,7 @@ var File_paginator_proto protoreflect.FileDescriptor
 
 const file_paginator_proto_rawDesc = "" +
 	"\n" +
-	"\x0fpaginator.proto\x12\tslicer.v1\"\xe5\x02\n" +
+	"\x0fpaginator.proto\x12\tslicer.v1\"\x80\x03\n" +
 	"\fQueryOptions\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\rR\x04page\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\rR\x05limit\x12(\n" +
@@ -357,7 +365,8 @@ const file_paginator_proto_rawDesc = "" +
 	"\x06search\x18\x04 \x01(\v2\x16.slicer.v1.SearchQueryR\x06search\x12\x16\n" +
 	"\x06select\x18\x05 \x03(\tR\x06select\x12>\n" +
 	"\afilters\x18\x06 \x03(\v2$.slicer.v1.QueryOptions.FiltersEntryR\afilters\x12=\n" +
-	"\vcomparisons\x18\a \x03(\v2\x1b.slicer.v1.ComparisonFilterR\vcomparisons\x1a:\n" +
+	"\vcomparisons\x18\a \x03(\v2\x1b.slicer.v1.ComparisonFilterR\vcomparisons\x12\x19\n" +
+	"\bgroup_by\x18\b \x03(\tR\agroupBy\x1a:\n" +
 	"\fFiltersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"5\n" +

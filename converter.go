@@ -39,6 +39,7 @@ func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
 		Search:      search,
 		Select:      q.Select,
 		Filters:     q.Filters,
+		GroupBy:     q.GroupBy,
 		Comparisons: comparisons,
 	}
 }
@@ -80,6 +81,7 @@ func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 		Sort:        sort,
 		Search:      search,
 		Select:      pb.Select,
+		GroupBy:     pb.GroupBy,
 		Filters:     pb.Filters,
 		Comparisons: comparisons,
 	}
