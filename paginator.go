@@ -101,6 +101,10 @@ func ParseOpts(values url.Values) QueryOptions {
 		opts.GroupBy = strings.Split(group, ",")
 		// force selection equal to group. this prevent full group by only
 		opts.Select = strings.Split(group, ",")
+
+		for _, sort := range opts.Sort {
+			opts.GroupBy = append(opts.GroupBy, sort.Field)
+		}
 	}
 
 	for key, val := range values {
