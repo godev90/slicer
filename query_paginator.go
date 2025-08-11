@@ -183,7 +183,10 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 	}
 
 	items := paginator.Items()
-	db = db.Offset(opts.Offset).Limit(opts.Limit)
+	if opts.Limit > 0 {
+		db = db.Offset(opts.Offset).Limit(opts.Limit)
+	}
+
 	if err := db.Scan(&items); err != nil {
 		return PageData{Items: paginator.Items(),
 			Total: total,
@@ -201,4 +204,9 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 	paginator.SetItems(items)
 
 	return PageData{Items: paginator.Items(), Total: total, Page: opts.Page, Limit: opts.Limit}, nil
+}
+
+func DownloadPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageData, error) {
+	opts.Limit = -1
+	return QueryPage(paginator, opts)
 }
