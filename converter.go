@@ -19,7 +19,7 @@ func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
 	for _, c := range q.Comparisons {
 		comparisons = append(comparisons, &slicerpb.ComparisonFilter{
 			Field: c.Field,
-			Op:    string(c.Op), // 👈 Cast to string
+			Op:    string(c.Op),
 			Value: c.Value,
 		})
 	}

@@ -59,6 +59,12 @@ const (
 	EQ  ComparisonOp = "eq"
 )
 
+var valueSeparator = ","
+
+func SetValueSeparator(separator string) {
+	valueSeparator = separator
+}
+
 func ParseOpts(values url.Values) QueryOptions {
 	opts := QueryOptions{
 		Page:    1,
@@ -79,7 +85,7 @@ func ParseOpts(values url.Values) QueryOptions {
 	opts.Offset = (opts.Page - 1) * opts.Limit
 
 	if sort := values.Get("sort"); sort != "" {
-		fields := strings.Split(sort, ",")
+		fields := strings.Split(sort, valueSeparator)
 		for _, f := range fields {
 			desc := strings.HasPrefix(f, "-")
 			field := strings.TrimPrefix(f, "-")
@@ -89,18 +95,18 @@ func ParseOpts(values url.Values) QueryOptions {
 	if fields := values.Get("search"); fields != "" {
 		if keyword := values.Get("keyword"); keyword != "" {
 			opts.Search = &SearchQuery{
-				Fields:  strings.Split(fields, ","),
+				Fields:  strings.Split(fields, valueSeparator),
 				Keyword: keyword,
 			}
 		}
 	}
 	if sel := values.Get("select"); sel != "" {
-		opts.Select = strings.Split(sel, ",")
+		opts.Select = strings.Split(sel, valueSeparator)
 	}
 	if group := values.Get("group"); group != "" {
-		opts.GroupBy = strings.Split(group, ",")
+		opts.GroupBy = strings.Split(group, valueSeparator)
 		// force selection equal to group. this prevent full group by only
-		opts.Select = strings.Split(group, ",")
+		opts.Select = strings.Split(group, valueSeparator)
 
 		for _, sort := range opts.Sort {
 			opts.GroupBy = append(opts.GroupBy, sort.Field)
