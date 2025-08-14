@@ -33,7 +33,7 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 
 	for key, val := range opts.Filters {
 		if col, ok := allowed[key]; ok {
-			parts := strings.Split(val, ",")
+			parts := strings.Split(val, valueSeparator)
 			if len(parts) == 1 {
 				db = db.Where(fmt.Sprintf("%s = ?", col), val)
 			} else {
