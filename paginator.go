@@ -127,8 +127,14 @@ func ParseOpts(values url.Values) QueryOptions {
 		if key == "page" || key == "limit" || key == "sort" || key == "search" || key == "keyword" || key == "select" || key == "group" {
 			continue
 		}
-		if strings.HasPrefix(key, "searchAnd.") && len(val) > 0 {
-			fieldName := strings.TrimPrefix(key, "searchAnd.")
+		// Handle both searchAnd.field=keyword and search_and.field=keyword formats
+		if (strings.HasPrefix(key, "searchAnd.") || strings.HasPrefix(key, "search_and.")) && len(val) > 0 {
+			var fieldName string
+			if strings.HasPrefix(key, "searchAnd.") {
+				fieldName = strings.TrimPrefix(key, "searchAnd.")
+			} else {
+				fieldName = strings.TrimPrefix(key, "search_and.")
+			}
 			if fieldName != "" && val[0] != "" {
 				if opts.SearchAnd == nil {
 					opts.SearchAnd = &SearchQueryAnd{Fields: []*SearchField{}}

@@ -8,10 +8,10 @@ import (
 )
 
 func TestSearchAndParsing(t *testing.T) {
-	// Test URL values with search_and parameters
+	// Test URL values with searchAnd parameters
 	values := url.Values{}
-	values.Add("search_and.status", "active")
-	values.Add("search_and.category", "backend")
+	values.Add("searchAnd.status", "active")
+	values.Add("searchAnd.category", "backend")
 	values.Add("page", "1")
 	values.Add("limit", "10")
 
@@ -42,12 +42,12 @@ func TestSearchAndParsing(t *testing.T) {
 }
 
 func TestSearchAndWithRegularSearch(t *testing.T) {
-	// Test combining regular search with search_and
+	// Test combining regular search with searchAnd
 	values := url.Values{}
 	values.Add("search", "name,description")
 	values.Add("keyword", "golang")
-	values.Add("search_and.status", "active")
-	values.Add("search_and.category", "backend")
+	values.Add("searchAnd.status", "active")
+	values.Add("searchAnd.category", "backend")
 
 	opts := slicer.ParseOpts(values)
 
@@ -67,7 +67,7 @@ func TestSearchAndWithRegularSearch(t *testing.T) {
 		t.Fatal("SearchAnd should not be nil")
 	}
 	if len(opts.SearchAnd.Fields) != 2 {
-		t.Fatalf("Expected 2 search_and fields, got %d", len(opts.SearchAnd.Fields))
+		t.Fatalf("Expected 2 searchAnd fields, got %d", len(opts.SearchAnd.Fields))
 	}
 }
 
