@@ -13,6 +13,7 @@ message QueryOptions {
   map<string, string> filters = 6;
   repeated ComparisonFilter comparisons = 7;
   repeated string group_by = 8;
+  SearchQueryAnd search_and = 9;
 }
 
 message SortField {
@@ -23,6 +24,15 @@ message SortField {
 message SearchQuery {
   repeated string fields = 1;
   string keyword = 2;
+}
+
+message SearchField {
+  string field = 1;
+  string keyword = 2;
+}
+
+message SearchQueryAnd {
+  repeated SearchField fields = 1;
 }
 
 message ComparisonFilter {

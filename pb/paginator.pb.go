@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v5.29.3
-// source: paginator.proto
+// source: pb/paginator.proto
 
 package slicerpb
 
@@ -31,13 +31,14 @@ type QueryOptions struct {
 	Filters       map[string]string      `protobuf:"bytes,6,rep,name=filters,proto3" json:"filters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	Comparisons   []*ComparisonFilter    `protobuf:"bytes,7,rep,name=comparisons,proto3" json:"comparisons,omitempty"`
 	GroupBy       []string               `protobuf:"bytes,8,rep,name=group_by,json=groupBy,proto3" json:"group_by,omitempty"`
+	SearchAnd     *SearchQueryAnd        `protobuf:"bytes,9,opt,name=search_and,json=searchAnd,proto3" json:"search_and,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *QueryOptions) Reset() {
 	*x = QueryOptions{}
-	mi := &file_paginator_proto_msgTypes[0]
+	mi := &file_pb_paginator_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49,7 +50,7 @@ func (x *QueryOptions) String() string {
 func (*QueryOptions) ProtoMessage() {}
 
 func (x *QueryOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_paginator_proto_msgTypes[0]
+	mi := &file_pb_paginator_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62,7 +63,7 @@ func (x *QueryOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryOptions.ProtoReflect.Descriptor instead.
 func (*QueryOptions) Descriptor() ([]byte, []int) {
-	return file_paginator_proto_rawDescGZIP(), []int{0}
+	return file_pb_paginator_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *QueryOptions) GetPage() uint32 {
@@ -121,6 +122,13 @@ func (x *QueryOptions) GetGroupBy() []string {
 	return nil
 }
 
+func (x *QueryOptions) GetSearchAnd() *SearchQueryAnd {
+	if x != nil {
+		return x.SearchAnd
+	}
+	return nil
+}
+
 type SortField struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Field         string                 `protobuf:"bytes,1,opt,name=field,proto3" json:"field,omitempty"`
@@ -131,7 +139,7 @@ type SortField struct {
 
 func (x *SortField) Reset() {
 	*x = SortField{}
-	mi := &file_paginator_proto_msgTypes[1]
+	mi := &file_pb_paginator_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -143,7 +151,7 @@ func (x *SortField) String() string {
 func (*SortField) ProtoMessage() {}
 
 func (x *SortField) ProtoReflect() protoreflect.Message {
-	mi := &file_paginator_proto_msgTypes[1]
+	mi := &file_pb_paginator_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -156,7 +164,7 @@ func (x *SortField) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SortField.ProtoReflect.Descriptor instead.
 func (*SortField) Descriptor() ([]byte, []int) {
-	return file_paginator_proto_rawDescGZIP(), []int{1}
+	return file_pb_paginator_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *SortField) GetField() string {
@@ -183,7 +191,7 @@ type SearchQuery struct {
 
 func (x *SearchQuery) Reset() {
 	*x = SearchQuery{}
-	mi := &file_paginator_proto_msgTypes[2]
+	mi := &file_pb_paginator_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -195,7 +203,7 @@ func (x *SearchQuery) String() string {
 func (*SearchQuery) ProtoMessage() {}
 
 func (x *SearchQuery) ProtoReflect() protoreflect.Message {
-	mi := &file_paginator_proto_msgTypes[2]
+	mi := &file_pb_paginator_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -208,7 +216,7 @@ func (x *SearchQuery) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchQuery.ProtoReflect.Descriptor instead.
 func (*SearchQuery) Descriptor() ([]byte, []int) {
-	return file_paginator_proto_rawDescGZIP(), []int{2}
+	return file_pb_paginator_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *SearchQuery) GetFields() []string {
@@ -225,6 +233,102 @@ func (x *SearchQuery) GetKeyword() string {
 	return ""
 }
 
+type SearchField struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Field         string                 `protobuf:"bytes,1,opt,name=field,proto3" json:"field,omitempty"`
+	Keyword       string                 `protobuf:"bytes,2,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchField) Reset() {
+	*x = SearchField{}
+	mi := &file_pb_paginator_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchField) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchField) ProtoMessage() {}
+
+func (x *SearchField) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_paginator_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchField.ProtoReflect.Descriptor instead.
+func (*SearchField) Descriptor() ([]byte, []int) {
+	return file_pb_paginator_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SearchField) GetField() string {
+	if x != nil {
+		return x.Field
+	}
+	return ""
+}
+
+func (x *SearchField) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+type SearchQueryAnd struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Fields        []*SearchField         `protobuf:"bytes,1,rep,name=fields,proto3" json:"fields,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchQueryAnd) Reset() {
+	*x = SearchQueryAnd{}
+	mi := &file_pb_paginator_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchQueryAnd) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchQueryAnd) ProtoMessage() {}
+
+func (x *SearchQueryAnd) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_paginator_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchQueryAnd.ProtoReflect.Descriptor instead.
+func (*SearchQueryAnd) Descriptor() ([]byte, []int) {
+	return file_pb_paginator_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SearchQueryAnd) GetFields() []*SearchField {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
 type ComparisonFilter struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Field         string                 `protobuf:"bytes,1,opt,name=field,proto3" json:"field,omitempty"`
@@ -236,7 +340,7 @@ type ComparisonFilter struct {
 
 func (x *ComparisonFilter) Reset() {
 	*x = ComparisonFilter{}
-	mi := &file_paginator_proto_msgTypes[3]
+	mi := &file_pb_paginator_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -248,7 +352,7 @@ func (x *ComparisonFilter) String() string {
 func (*ComparisonFilter) ProtoMessage() {}
 
 func (x *ComparisonFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_paginator_proto_msgTypes[3]
+	mi := &file_pb_paginator_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -261,7 +365,7 @@ func (x *ComparisonFilter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComparisonFilter.ProtoReflect.Descriptor instead.
 func (*ComparisonFilter) Descriptor() ([]byte, []int) {
-	return file_paginator_proto_rawDescGZIP(), []int{3}
+	return file_pb_paginator_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ComparisonFilter) GetField() string {
@@ -297,7 +401,7 @@ type PageData struct {
 
 func (x *PageData) Reset() {
 	*x = PageData{}
-	mi := &file_paginator_proto_msgTypes[4]
+	mi := &file_pb_paginator_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -309,7 +413,7 @@ func (x *PageData) String() string {
 func (*PageData) ProtoMessage() {}
 
 func (x *PageData) ProtoReflect() protoreflect.Message {
-	mi := &file_paginator_proto_msgTypes[4]
+	mi := &file_pb_paginator_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -322,7 +426,7 @@ func (x *PageData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PageData.ProtoReflect.Descriptor instead.
 func (*PageData) Descriptor() ([]byte, []int) {
-	return file_paginator_proto_rawDescGZIP(), []int{4}
+	return file_pb_paginator_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *PageData) GetTotal() int64 {
@@ -353,11 +457,11 @@ func (x *PageData) GetItems() []byte {
 	return nil
 }
 
-var File_paginator_proto protoreflect.FileDescriptor
+var File_pb_paginator_proto protoreflect.FileDescriptor
 
-const file_paginator_proto_rawDesc = "" +
+const file_pb_paginator_proto_rawDesc = "" +
 	"\n" +
-	"\x0fpaginator.proto\x12\tslicer.v1\"\x80\x03\n" +
+	"\x12pb/paginator.proto\x12\tslicer.v1\"\xba\x03\n" +
 	"\fQueryOptions\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\rR\x04page\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\rR\x05limit\x12(\n" +
@@ -366,7 +470,9 @@ const file_paginator_proto_rawDesc = "" +
 	"\x06select\x18\x05 \x03(\tR\x06select\x12>\n" +
 	"\afilters\x18\x06 \x03(\v2$.slicer.v1.QueryOptions.FiltersEntryR\afilters\x12=\n" +
 	"\vcomparisons\x18\a \x03(\v2\x1b.slicer.v1.ComparisonFilterR\vcomparisons\x12\x19\n" +
-	"\bgroup_by\x18\b \x03(\tR\agroupBy\x1a:\n" +
+	"\bgroup_by\x18\b \x03(\tR\agroupBy\x128\n" +
+	"\n" +
+	"search_and\x18\t \x01(\v2\x19.slicer.v1.SearchQueryAndR\tsearchAnd\x1a:\n" +
 	"\fFiltersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"5\n" +
@@ -375,7 +481,12 @@ const file_paginator_proto_rawDesc = "" +
 	"\x04desc\x18\x02 \x01(\bR\x04desc\"?\n" +
 	"\vSearchQuery\x12\x16\n" +
 	"\x06fields\x18\x01 \x03(\tR\x06fields\x12\x18\n" +
-	"\akeyword\x18\x02 \x01(\tR\akeyword\"N\n" +
+	"\akeyword\x18\x02 \x01(\tR\akeyword\"=\n" +
+	"\vSearchField\x12\x14\n" +
+	"\x05field\x18\x01 \x01(\tR\x05field\x12\x18\n" +
+	"\akeyword\x18\x02 \x01(\tR\akeyword\"@\n" +
+	"\x0eSearchQueryAnd\x12.\n" +
+	"\x06fields\x18\x01 \x03(\v2\x16.slicer.v1.SearchFieldR\x06fields\"N\n" +
 	"\x10ComparisonFilter\x12\x14\n" +
 	"\x05field\x18\x01 \x01(\tR\x05field\x12\x0e\n" +
 	"\x02op\x18\x02 \x01(\tR\x02op\x12\x14\n" +
@@ -387,58 +498,62 @@ const file_paginator_proto_rawDesc = "" +
 	"\x05items\x18\x04 \x01(\fR\x05itemsB'Z%github.com/godev90/slicer/pb;slicerpbb\x06proto3"
 
 var (
-	file_paginator_proto_rawDescOnce sync.Once
-	file_paginator_proto_rawDescData []byte
+	file_pb_paginator_proto_rawDescOnce sync.Once
+	file_pb_paginator_proto_rawDescData []byte
 )
 
-func file_paginator_proto_rawDescGZIP() []byte {
-	file_paginator_proto_rawDescOnce.Do(func() {
-		file_paginator_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_paginator_proto_rawDesc), len(file_paginator_proto_rawDesc)))
+func file_pb_paginator_proto_rawDescGZIP() []byte {
+	file_pb_paginator_proto_rawDescOnce.Do(func() {
+		file_pb_paginator_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_pb_paginator_proto_rawDesc), len(file_pb_paginator_proto_rawDesc)))
 	})
-	return file_paginator_proto_rawDescData
+	return file_pb_paginator_proto_rawDescData
 }
 
-var file_paginator_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_paginator_proto_goTypes = []any{
+var file_pb_paginator_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_pb_paginator_proto_goTypes = []any{
 	(*QueryOptions)(nil),     // 0: slicer.v1.QueryOptions
 	(*SortField)(nil),        // 1: slicer.v1.SortField
 	(*SearchQuery)(nil),      // 2: slicer.v1.SearchQuery
-	(*ComparisonFilter)(nil), // 3: slicer.v1.ComparisonFilter
-	(*PageData)(nil),         // 4: slicer.v1.PageData
-	nil,                      // 5: slicer.v1.QueryOptions.FiltersEntry
+	(*SearchField)(nil),      // 3: slicer.v1.SearchField
+	(*SearchQueryAnd)(nil),   // 4: slicer.v1.SearchQueryAnd
+	(*ComparisonFilter)(nil), // 5: slicer.v1.ComparisonFilter
+	(*PageData)(nil),         // 6: slicer.v1.PageData
+	nil,                      // 7: slicer.v1.QueryOptions.FiltersEntry
 }
-var file_paginator_proto_depIdxs = []int32{
+var file_pb_paginator_proto_depIdxs = []int32{
 	1, // 0: slicer.v1.QueryOptions.sort:type_name -> slicer.v1.SortField
 	2, // 1: slicer.v1.QueryOptions.search:type_name -> slicer.v1.SearchQuery
-	5, // 2: slicer.v1.QueryOptions.filters:type_name -> slicer.v1.QueryOptions.FiltersEntry
-	3, // 3: slicer.v1.QueryOptions.comparisons:type_name -> slicer.v1.ComparisonFilter
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	7, // 2: slicer.v1.QueryOptions.filters:type_name -> slicer.v1.QueryOptions.FiltersEntry
+	5, // 3: slicer.v1.QueryOptions.comparisons:type_name -> slicer.v1.ComparisonFilter
+	4, // 4: slicer.v1.QueryOptions.search_and:type_name -> slicer.v1.SearchQueryAnd
+	3, // 5: slicer.v1.SearchQueryAnd.fields:type_name -> slicer.v1.SearchField
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
-func init() { file_paginator_proto_init() }
-func file_paginator_proto_init() {
-	if File_paginator_proto != nil {
+func init() { file_pb_paginator_proto_init() }
+func file_pb_paginator_proto_init() {
+	if File_pb_paginator_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_paginator_proto_rawDesc), len(file_paginator_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pb_paginator_proto_rawDesc), len(file_pb_paginator_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_paginator_proto_goTypes,
-		DependencyIndexes: file_paginator_proto_depIdxs,
-		MessageInfos:      file_paginator_proto_msgTypes,
+		GoTypes:           file_pb_paginator_proto_goTypes,
+		DependencyIndexes: file_pb_paginator_proto_depIdxs,
+		MessageInfos:      file_pb_paginator_proto_msgTypes,
 	}.Build()
-	File_paginator_proto = out.File
-	file_paginator_proto_goTypes = nil
-	file_paginator_proto_depIdxs = nil
+	File_pb_paginator_proto = out.File
+	file_pb_paginator_proto_goTypes = nil
+	file_pb_paginator_proto_depIdxs = nil
 }

@@ -32,6 +32,20 @@ func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
 		}
 	}
 
+	var searchAnd *slicerpb.SearchQueryAnd
+	if q.SearchAnd != nil && len(q.SearchAnd.Fields) > 0 {
+		searchFields := make([]*slicerpb.SearchField, 0, len(q.SearchAnd.Fields))
+		for _, field := range q.SearchAnd.Fields {
+			searchFields = append(searchFields, &slicerpb.SearchField{
+				Field:   field.Field,
+				Keyword: field.Keyword,
+			})
+		}
+		searchAnd = &slicerpb.SearchQueryAnd{
+			Fields: searchFields,
+		}
+	}
+
 	if q.Limit == 0 {
 		q.Limit = 10
 	}
@@ -45,6 +59,7 @@ func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
 		Limit:       uint32(q.Limit),
 		Sort:        sort,
 		Search:      search,
+		SearchAnd:   searchAnd,
 		Select:      q.Select,
 		Filters:     q.Filters,
 		GroupBy:     q.GroupBy,
@@ -93,12 +108,27 @@ func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 		}
 	}
 
+	var searchAnd *SearchQueryAnd
+	if pb.SearchAnd != nil && len(pb.SearchAnd.Fields) > 0 {
+		searchFields := make([]*SearchField, 0, len(pb.SearchAnd.Fields))
+		for _, field := range pb.SearchAnd.Fields {
+			searchFields = append(searchFields, &SearchField{
+				Field:   field.Field,
+				Keyword: field.Keyword,
+			})
+		}
+		searchAnd = &SearchQueryAnd{
+			Fields: searchFields,
+		}
+	}
+
 	return QueryOptions{
 		Page:        int(pb.Page),
 		Limit:       int(pb.Limit),
 		Offset:      int(pb.Page-1) * int(pb.Limit),
 		Sort:        sort,
 		Search:      search,
+		SearchAnd:   searchAnd,
 		Select:      pb.Select,
 		GroupBy:     pb.GroupBy,
 		Filters:     pb.Filters,

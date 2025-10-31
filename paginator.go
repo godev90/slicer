@@ -18,6 +18,7 @@ type (
 		Offset      int
 		Sort        []SortField
 		Search      *SearchQuery
+		SearchAnd   *SearchQueryAnd
 		Filters     map[string]string
 		Select      []string
 		GroupBy     []string
@@ -32,6 +33,15 @@ type (
 	SearchQuery struct {
 		Fields  []string
 		Keyword string
+	}
+
+	SearchField struct {
+		Field   string
+		Keyword string
+	}
+
+	SearchQueryAnd struct {
+		Fields []*SearchField
 	}
 
 	PageData struct {
@@ -115,6 +125,19 @@ func ParseOpts(values url.Values) QueryOptions {
 
 	for key, val := range values {
 		if key == "page" || key == "limit" || key == "sort" || key == "search" || key == "keyword" || key == "select" || key == "group" {
+			continue
+		}
+		if strings.HasPrefix(key, "searchAnd.") && len(val) > 0 {
+			fieldName := strings.TrimPrefix(key, "searchAnd.")
+			if fieldName != "" && val[0] != "" {
+				if opts.SearchAnd == nil {
+					opts.SearchAnd = &SearchQueryAnd{Fields: []*SearchField{}}
+				}
+				opts.SearchAnd.Fields = append(opts.SearchAnd.Fields, &SearchField{
+					Field:   fieldName,
+					Keyword: val[0],
+				})
+			}
 			continue
 		}
 		if matches := regexp.MustCompile(`^([a-zA-Z0-9_]+)\[(gt|gte|lt|lte|eq)\]$`).FindStringSubmatch(key); len(matches) == 3 {

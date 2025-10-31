@@ -127,6 +127,20 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 		}
 	}
 
+	if opts.SearchAnd != nil && len(opts.SearchAnd.Fields) > 0 {
+		for _, searchField := range opts.SearchAnd.Fields {
+			if col, ok := allowed[searchField.Field]; ok && searchField.Keyword != "" {
+				cond := fmt.Sprintf("%s LIKE ?", col)
+
+				if db.Driver() == orm.FlavorPostgres {
+					cond = fmt.Sprintf("%s ILIKE ?", col)
+				}
+
+				db = db.Where(cond, "%"+searchField.Keyword+"%")
+			}
+		}
+	}
+
 	if len(opts.Select) > 0 {
 		columns := []string{}
 		for _, field := range opts.Select {

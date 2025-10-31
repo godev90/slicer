@@ -116,6 +116,38 @@ func SlicePage[T any](p *SlicePaginator[T], opts QueryOptions) (PageData, error)
 		filtered = searched
 	}
 
+	// 3.1. Apply search_and
+	if opts.SearchAnd != nil && len(opts.SearchAnd.Fields) > 0 {
+		var searchedAnd []T
+		for _, item := range filtered {
+			v := reflect.ValueOf(item)
+			if v.Kind() == reflect.Ptr {
+				v = v.Elem()
+			}
+			matchedAll := true
+			for _, searchField := range opts.SearchAnd.Fields {
+				if _, ok := p.fields[searchField.Field]; !ok {
+					continue
+				}
+				field := findFieldByColumn(v, searchField.Field)
+				if field.IsValid() {
+					val := fmt.Sprintf("%v", field.Interface())
+					if !strings.Contains(strings.ToLower(val), strings.ToLower(searchField.Keyword)) {
+						matchedAll = false
+						break
+					}
+				} else {
+					matchedAll = false
+					break
+				}
+			}
+			if matchedAll {
+				searchedAnd = append(searchedAnd, item)
+			}
+		}
+		filtered = searchedAnd
+	}
+
 	// 4. Sorting
 	for i := len(opts.Sort) - 1; i >= 0; i-- {
 		sortField := opts.Sort[i]
