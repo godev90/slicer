@@ -1,7 +1,10 @@
 package slicer
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"io"
 
 	slicerpb "github.com/godev90/slicer/pb"
 )
@@ -136,12 +139,49 @@ func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 	}
 }
 
+// func (data PageData) ToProto() (*slicerpb.PageData, error) {
+// 	jbytes, err := json.Marshal(data.Items)
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	page := int32(data.Page)
+// 	limit := int32(data.Limit)
+
+// 	if page == 0 {
+// 		page = 1
+// 	}
+
+// 	if limit == 0 {
+// 		limit = 10
+// 	}
+
+// 	return &slicerpb.PageData{
+// 		Page:  page,
+// 		Limit: limit,
+// 		Total: data.Total,
+// 		Items: jbytes,
+// 	}, nil
+// }
+
 func (data PageData) ToProto() (*slicerpb.PageData, error) {
 	jbytes, err := json.Marshal(data.Items)
-
 	if err != nil {
 		return nil, err
 	}
+
+	var buf bytes.Buffer
+	gw := gzip.NewWriter(&buf)
+	_, err = gw.Write(jbytes)
+	if err != nil {
+		_ = gw.Close()
+		return nil, err
+	}
+	if err := gw.Close(); err != nil {
+		return nil, err
+	}
+	compressed := buf.Bytes()
 
 	page := int32(data.Page)
 	limit := int32(data.Limit)
@@ -158,16 +198,60 @@ func (data PageData) ToProto() (*slicerpb.PageData, error) {
 		Page:  page,
 		Limit: limit,
 		Total: data.Total,
-		Items: jbytes,
+		Items: compressed,
 	}, nil
 }
+
+// func PageFromProto(protoData *slicerpb.PageData, destSchema any) (*PageData, error) {
+// 	if protoData == nil {
+// 		return nil, nil
+// 	}
+
+// 	err := json.Unmarshal(protoData.Items, destSchema)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	page := protoData.Page
+// 	limit := protoData.Limit
+
+// 	if page == 0 {
+// 		page = 1
+// 	}
+
+// 	if limit == 0 {
+// 		limit = 10
+// 	}
+
+// 	return &PageData{
+// 		Page:  int(page),
+// 		Limit: int(limit),
+// 		Total: protoData.Total,
+// 		Items: destSchema,
+// 	}, nil
+// }
 
 func PageFromProto(protoData *slicerpb.PageData, destSchema any) (*PageData, error) {
 	if protoData == nil {
 		return nil, nil
 	}
 
-	err := json.Unmarshal(protoData.Items, destSchema)
+	items := protoData.Items
+	// detect gzip by magic bytes 0x1f 0x8b
+	if len(items) >= 2 && items[0] == 0x1f && items[1] == 0x8b {
+		gr, err := gzip.NewReader(bytes.NewReader(items))
+		if err != nil {
+			return nil, err
+		}
+		decompressed, err := io.ReadAll(gr)
+		_ = gr.Close()
+		if err != nil {
+			return nil, err
+		}
+		items = decompressed
+	}
+
+	err := json.Unmarshal(items, destSchema)
 	if err != nil {
 		return nil, err
 	}
