@@ -305,11 +305,22 @@ func compareFloat64(aStr, bStr string, op ComparisonOp) bool {
 }
 
 func compareTime(a time.Time, bStr string, op ComparisonOp) bool {
-	layout := "2006-01-02"
-	if len(bStr) > 10 {
-		layout = "2006-01-02 15:04:05"
+	// Try multiple time layouts to handle different formats
+	layouts := []string{
+		time.RFC3339,          // "2006-01-02T15:04:05Z07:00"
+		"2006-01-02T15:04:05Z", // "2023-01-01T00:00:00Z"
+		"2006-01-02 15:04:05", // "2023-01-01 00:00:00"
+		"2006-01-02",          // "2023-01-01"
 	}
-	b, err := time.Parse(layout, bStr)
+	
+	var b time.Time
+	var err error
+	for _, layout := range layouts {
+		b, err = time.Parse(layout, bStr)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		return false
 	}

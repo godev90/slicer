@@ -17,6 +17,7 @@ func NewSlicePaginator[T any](source []T, allowedFields map[string]string) *Slic
 	return &SlicePaginator[T]{
 		source: source,
 		fields: allowedFields,
+		items:  []T{}, // Initialize with empty slice instead of nil
 	}
 }
 
