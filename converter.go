@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 
 	slicerpb "github.com/godev90/slicer/pb"
-	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
@@ -164,18 +165,14 @@ func (data PageData) ToProto() (*slicerpb.PageData, error) {
 }
 
 func (data PageData) ToProtoValue() (*slicerpb.PageData, error) {
-	// ensure items are JSON-compatible native Go types, then convert to structpb.Value
+	// marshal Items to JSON bytes and pack into Any as wrapperspb.BytesValue
 	jbytes, err := json.Marshal(data.Items)
 	if err != nil {
 		return nil, err
 	}
 
-	var v interface{}
-	if err := json.Unmarshal(jbytes, &v); err != nil {
-		return nil, err
-	}
-
-	val, err := structpb.NewValue(v)
+	bytesMsg := &wrapperspb.BytesValue{Value: jbytes}
+	anyVal, err := anypb.New(bytesMsg)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +192,7 @@ func (data PageData) ToProtoValue() (*slicerpb.PageData, error) {
 		Page:  page,
 		Limit: limit,
 		Total: data.Total,
-		Rows:  val,
+		Rows:  anyVal,
 	}, nil
 }
 
@@ -233,20 +230,22 @@ func PageFromProtoValue(protoData *slicerpb.PageData, destSchema any) (*PageData
 		return nil, nil
 	}
 
-	// convert structpb.Value -> native Go -> marshal/unmarshal into destSchema
-	var native interface{}
-	if protoData.Rows != nil {
-		native = protoData.Rows.AsInterface()
-	} else {
-		native = nil
+	if protoData.Rows == nil {
+		return &PageData{
+			Page:  int(protoData.Page),
+			Limit: int(protoData.Limit),
+			Total: protoData.Total,
+			Items: []string{},
+		}, nil
 	}
 
-	jbytes, err := json.Marshal(native)
-	if err != nil {
+	// Unpack Any as wrapperspb.BytesValue and decode JSON
+	var bytesMsg wrapperspb.BytesValue
+	if err := protoData.Rows.UnmarshalTo(&bytesMsg); err != nil {
 		return nil, err
 	}
 
-	if err := json.Unmarshal(jbytes, destSchema); err != nil {
+	if err := json.Unmarshal(bytesMsg.Value, destSchema); err != nil {
 		return nil, err
 	}
 
@@ -256,7 +255,6 @@ func PageFromProtoValue(protoData *slicerpb.PageData, destSchema any) (*PageData
 	if page == 0 {
 		page = 1
 	}
-
 	if limit == 0 {
 		limit = 10
 	}
