@@ -4,6 +4,8 @@ package slicer.v1;
 
 option go_package = "github.com/godev90/slicer/pb;slicerpb";
 
+import "google/protobuf/struct.proto";
+
 message QueryOptions {
   uint32 page = 1;
   uint32 limit = 2;
@@ -46,4 +48,5 @@ message PageData {
   int32 page = 2;
   int32 limit = 3;
   bytes items = 4;
+  google.protobuf.Value rows = 5;
 }
