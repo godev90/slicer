@@ -48,5 +48,11 @@ message PageData {
   int32 page = 2;
   int32 limit = 3;
   bytes items = 4;
-  google.protobuf.Any rows = 5;
+}
+
+message PageDataBuf {
+  int64 total = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  google.protobuf.Any items = 4;
 }

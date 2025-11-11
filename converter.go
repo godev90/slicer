@@ -4,10 +4,16 @@ import (
 	"encoding/json"
 
 	slicerpb "github.com/godev90/slicer/pb"
+	"github.com/golang/snappy"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
+// ToProto converts a QueryOptions value from the slicer package into its
+// protobuf representation `slicerpb.QueryOptions`.
+//
+// It maps sorting, comparisons, search fields and other query options into
+// the generated protobuf message so the query may be transmitted over RPC.
 func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
 	sort := make([]*slicerpb.SortField, 0, len(q.Sort))
 	for _, s := range q.Sort {
@@ -69,6 +75,11 @@ func (q QueryOptions) ToProto() *slicerpb.QueryOptions {
 	}
 }
 
+// QueryFromProto converts a protobuf `slicerpb.QueryOptions` into the
+// local `QueryOptions` type used by the slicer package.
+//
+// It performs safe defaults for page and limit and converts nested fields
+// such as Sort and Comparisons back into their native types.
 func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 	if pb == nil {
 		return QueryOptions{
@@ -138,6 +149,9 @@ func QueryFromProto(pb *slicerpb.QueryOptions) QueryOptions {
 	}
 }
 
+// ToProto serializes PageData.Items into JSON and returns a protobuf
+// `slicerpb.PageData` containing the serialized (and snappy-compressed)
+// bytes in the Items field. It also ensures sane defaults for page and limit.
 func (data PageData) ToProto() (*slicerpb.PageData, error) {
 	jbytes, err := json.Marshal(data.Items)
 
@@ -145,37 +159,7 @@ func (data PageData) ToProto() (*slicerpb.PageData, error) {
 		return nil, err
 	}
 
-	page := int32(data.Page)
-	limit := int32(data.Limit)
-
-	if page == 0 {
-		page = 1
-	}
-
-	if limit == 0 {
-		limit = 10
-	}
-
-	return &slicerpb.PageData{
-		Page:  page,
-		Limit: limit,
-		Total: data.Total,
-		Items: jbytes,
-	}, nil
-}
-
-func (data PageData) ToProtoValue() (*slicerpb.PageData, error) {
-	// marshal Items to JSON bytes and pack into Any as wrapperspb.BytesValue
-	jbytes, err := json.Marshal(data.Items)
-	if err != nil {
-		return nil, err
-	}
-
-	bytesMsg := &wrapperspb.BytesValue{Value: jbytes}
-	anyVal, err := anypb.New(bytesMsg)
-	if err != nil {
-		return nil, err
-	}
+	compressed := snappy.Encode(nil, jbytes)
 
 	page := int32(data.Page)
 	limit := int32(data.Limit)
@@ -192,16 +176,32 @@ func (data PageData) ToProtoValue() (*slicerpb.PageData, error) {
 		Page:  page,
 		Limit: limit,
 		Total: data.Total,
-		Rows:  anyVal,
+		Items: compressed,
 	}, nil
 }
 
+// PageFromProto converts a protobuf `slicerpb.PageData` back into the
+// local PageData type. It will attempt to decode Snappy-compressed bytes
+// in the Items field, fall back to raw JSON if decoding fails, and
+// unmarshal the resulting JSON into destSchema.
 func PageFromProto(protoData *slicerpb.PageData, destSchema any) (*PageData, error) {
 	if protoData == nil {
 		return nil, nil
 	}
 
-	err := json.Unmarshal(protoData.Items, destSchema)
+	var dataBytes []byte
+	if len(protoData.Items) == 0 {
+		dataBytes = nil
+	} else {
+		// try snappy decode; if fails, assume raw JSON
+		if dec, err := snappy.Decode(nil, protoData.Items); err == nil {
+			dataBytes = dec
+		} else {
+			dataBytes = protoData.Items
+		}
+	}
+
+	err := json.Unmarshal(dataBytes, destSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -225,12 +225,52 @@ func PageFromProto(protoData *slicerpb.PageData, destSchema any) (*PageData, err
 	}, nil
 }
 
-func PageFromProtoValue(protoData *slicerpb.PageData, destSchema any) (*PageData, error) {
+// ToProtoBuf packs PageData.Items as JSON bytes into a protobuf Any
+// wrapper (wrapperspb.BytesValue) and stores it in the Rows field of the
+// returned `slicerpb.PageData`. This is useful for transporting arbitrary
+// JSON while keeping compatibility with consumers that expect an Any.
+func (data PageData) ToProtoBuf() (*slicerpb.PageDataBuf, error) {
+	// marshal Items to JSON bytes and pack into Any as wrapperspb.BytesValue
+	jbytes, err := json.Marshal(data.Items)
+	if err != nil {
+		return nil, err
+	}
+
+	bytesMsg := &wrapperspb.BytesValue{Value: jbytes}
+	anyVal, err := anypb.New(bytesMsg)
+	if err != nil {
+		return nil, err
+	}
+
+	page := int32(data.Page)
+	limit := int32(data.Limit)
+
+	if page == 0 {
+		page = 1
+	}
+
+	if limit == 0 {
+		limit = 10
+	}
+
+	return &slicerpb.PageDataBuf{
+		Page:  page,
+		Limit: limit,
+		Total: data.Total,
+		Items: anyVal,
+	}, nil
+}
+
+// PageFromProtoBuf unpacks the Rows Any field (expected to contain
+// a wrapperspb.BytesValue), decodes the contained JSON bytes and
+// unmarshals them into destSchema. Returns a populated PageData with
+// defaults applied for page and limit.
+func PageFromProtoBuf(protoData *slicerpb.PageDataBuf, destSchema any) (*PageData, error) {
 	if protoData == nil {
 		return nil, nil
 	}
 
-	if protoData.Rows == nil {
+	if protoData.Items == nil {
 		return &PageData{
 			Page:  int(protoData.Page),
 			Limit: int(protoData.Limit),
@@ -241,7 +281,7 @@ func PageFromProtoValue(protoData *slicerpb.PageData, destSchema any) (*PageData
 
 	// Unpack Any as wrapperspb.BytesValue and decode JSON
 	var bytesMsg wrapperspb.BytesValue
-	if err := protoData.Rows.UnmarshalTo(&bytesMsg); err != nil {
+	if err := protoData.Items.UnmarshalTo(&bytesMsg); err != nil {
 		return nil, err
 	}
 

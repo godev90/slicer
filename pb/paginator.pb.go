@@ -396,7 +396,6 @@ type PageData struct {
 	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
 	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
 	Items         []byte                 `protobuf:"bytes,4,opt,name=items,proto3" json:"items,omitempty"`
-	Rows          *anypb.Any             `protobuf:"bytes,5,opt,name=rows,proto3" json:"rows,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -459,9 +458,70 @@ func (x *PageData) GetItems() []byte {
 	return nil
 }
 
-func (x *PageData) GetRows() *anypb.Any {
+type PageDataBuf struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Total         int64                  `protobuf:"varint,1,opt,name=total,proto3" json:"total,omitempty"`
+	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	Items         *anypb.Any             `protobuf:"bytes,4,opt,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PageDataBuf) Reset() {
+	*x = PageDataBuf{}
+	mi := &file_pb_paginator_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PageDataBuf) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PageDataBuf) ProtoMessage() {}
+
+func (x *PageDataBuf) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_paginator_proto_msgTypes[7]
 	if x != nil {
-		return x.Rows
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PageDataBuf.ProtoReflect.Descriptor instead.
+func (*PageDataBuf) Descriptor() ([]byte, []int) {
+	return file_pb_paginator_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *PageDataBuf) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *PageDataBuf) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *PageDataBuf) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *PageDataBuf) GetItems() *anypb.Any {
+	if x != nil {
+		return x.Items
 	}
 	return nil
 }
@@ -499,13 +559,17 @@ const file_pb_paginator_proto_rawDesc = "" +
 	"\x10ComparisonFilter\x12\x14\n" +
 	"\x05field\x18\x01 \x01(\tR\x05field\x12\x0e\n" +
 	"\x02op\x18\x02 \x01(\tR\x02op\x12\x14\n" +
-	"\x05value\x18\x03 \x01(\tR\x05value\"\x8a\x01\n" +
+	"\x05value\x18\x03 \x01(\tR\x05value\"`\n" +
 	"\bPageData\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x14\n" +
 	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12\x14\n" +
-	"\x05items\x18\x04 \x01(\fR\x05items\x12(\n" +
-	"\x04rows\x18\x05 \x01(\v2\x14.google.protobuf.AnyR\x04rowsB'Z%github.com/godev90/slicer/pb;slicerpbb\x06proto3"
+	"\x05items\x18\x04 \x01(\fR\x05items\"y\n" +
+	"\vPageDataBuf\x12\x14\n" +
+	"\x05total\x18\x01 \x01(\x03R\x05total\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12*\n" +
+	"\x05items\x18\x04 \x01(\v2\x14.google.protobuf.AnyR\x05itemsB'Z%github.com/godev90/slicer/pb;slicerpbb\x06proto3"
 
 var (
 	file_pb_paginator_proto_rawDescOnce sync.Once
@@ -519,7 +583,7 @@ func file_pb_paginator_proto_rawDescGZIP() []byte {
 	return file_pb_paginator_proto_rawDescData
 }
 
-var file_pb_paginator_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_pb_paginator_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_pb_paginator_proto_goTypes = []any{
 	(*QueryOptions)(nil),     // 0: slicer.v1.QueryOptions
 	(*SortField)(nil),        // 1: slicer.v1.SortField
@@ -528,17 +592,18 @@ var file_pb_paginator_proto_goTypes = []any{
 	(*SearchQueryAnd)(nil),   // 4: slicer.v1.SearchQueryAnd
 	(*ComparisonFilter)(nil), // 5: slicer.v1.ComparisonFilter
 	(*PageData)(nil),         // 6: slicer.v1.PageData
-	nil,                      // 7: slicer.v1.QueryOptions.FiltersEntry
-	(*anypb.Any)(nil),        // 8: google.protobuf.Any
+	(*PageDataBuf)(nil),      // 7: slicer.v1.PageDataBuf
+	nil,                      // 8: slicer.v1.QueryOptions.FiltersEntry
+	(*anypb.Any)(nil),        // 9: google.protobuf.Any
 }
 var file_pb_paginator_proto_depIdxs = []int32{
 	1, // 0: slicer.v1.QueryOptions.sort:type_name -> slicer.v1.SortField
 	2, // 1: slicer.v1.QueryOptions.search:type_name -> slicer.v1.SearchQuery
-	7, // 2: slicer.v1.QueryOptions.filters:type_name -> slicer.v1.QueryOptions.FiltersEntry
+	8, // 2: slicer.v1.QueryOptions.filters:type_name -> slicer.v1.QueryOptions.FiltersEntry
 	5, // 3: slicer.v1.QueryOptions.comparisons:type_name -> slicer.v1.ComparisonFilter
 	4, // 4: slicer.v1.QueryOptions.search_and:type_name -> slicer.v1.SearchQueryAnd
 	3, // 5: slicer.v1.SearchQueryAnd.fields:type_name -> slicer.v1.SearchField
-	8, // 6: slicer.v1.PageData.rows:type_name -> google.protobuf.Any
+	9, // 6: slicer.v1.PageDataBuf.items:type_name -> google.protobuf.Any
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type
 	7, // [7:7] is the sub-list for extension type_name
@@ -557,7 +622,7 @@ func file_pb_paginator_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pb_paginator_proto_rawDesc), len(file_pb_paginator_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
