@@ -2,11 +2,16 @@ package slicer
 
 import (
 	"encoding/json"
+	"errors"
 
 	slicerpb "github.com/godev90/slicer/pb"
 	"github.com/golang/snappy"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+)
+
+var (
+	ErrEmptyPageData error = errors.New("slicer: empty page data")
 )
 
 // ToProto converts a QueryOptions value from the slicer package into its
@@ -186,7 +191,7 @@ func (data PageData) ToProto() (*slicerpb.PageData, error) {
 // unmarshal the resulting JSON into destSchema.
 func PageFromProto(protoData *slicerpb.PageData, destSchema any) (*PageData, error) {
 	if protoData == nil {
-		return nil, nil
+		return nil, ErrEmptyPageData
 	}
 
 	var dataBytes []byte
@@ -267,7 +272,7 @@ func (data PageData) ToProtoBuf() (*slicerpb.PageDataBuf, error) {
 // defaults applied for page and limit.
 func PageFromProtoBuf(protoData *slicerpb.PageDataBuf, destSchema any) (*PageData, error) {
 	if protoData == nil {
-		return nil, nil
+		return nil, ErrEmptyPageData
 	}
 
 	if protoData.Items == nil {
@@ -305,4 +310,22 @@ func PageFromProtoBuf(protoData *slicerpb.PageDataBuf, destSchema any) (*PageDat
 		Total: protoData.Total,
 		Items: destSchema,
 	}, nil
+}
+
+// ToProtoValue is a legacy/compatibility wrapper that returns the old
+// slicerpb.PageData (Items as bytes). Deprecated: prefer ToProtoBuf which
+// returns the newer slicerpb.PageDataBuf with google.protobuf.Any items.
+func (data PageData) ToProtoValue() (*slicerpb.PageData, error) {
+	// legacy: delegates to ToProto() which produces snappy-compressed items bytes.
+	// kept for backward compatibility with older consumers.
+	return data.ToProto()
+}
+
+// PageFromProtoValue is a legacy/compatibility wrapper that consumes the old
+// slicerpb.PageData (Items as bytes). Deprecated: prefer PageFromProtoBuf
+// which consumes slicerpb.PageDataBuf with google.protobuf.Any items.
+func PageFromProtoValue(protoData *slicerpb.PageData, destSchema any) (*PageData, error) {
+	// legacy: delegates to PageFromProto().
+	// kept for backward compatibility with older consumers.
+	return PageFromProto(protoData, destSchema)
 }

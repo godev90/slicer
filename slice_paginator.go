@@ -25,21 +25,18 @@ func NewSlicePaginator[T any](source []T, allowedFields map[string]string) *Slic
 // source slice. `allowedFields` is a map from logical field names to column
 // names that will be used when filtering, searching and sorting.
 // The paginator initializes with an empty items slice.
-
 func (p *SlicePaginator[T]) Items() []T {
 	return p.items
 }
 
 // Items returns the current page items stored in the paginator. It returns an
 // empty slice when no items have been set.
-
 func (p *SlicePaginator[T]) SetItems(items []T) {
 	p.items = items
 }
 
 // SetItems sets the paginator's items to the provided slice. This is used by
 // pagination routines to store the resulting page.
-
 func SlicePage[T any](p *SlicePaginator[T], opts QueryOptions) (PageData, error) {
 	var filtered []T
 
