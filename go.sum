@@ -1,5 +1,5 @@
-github.com/godev90/orm v0.1.23 h1:toGd0/JVFDqLlq4O22810MYzf1TWs8gFQOu3qFjkMFs=
-github.com/godev90/orm v0.1.23/go.mod h1:FH/HSEhS1R5yqjjVcWh8Upvfe4jZLcTz+2E7jDfzj98=
+github.com/godev90/orm v0.1.24 h1:pHzlxON300JYWgYZX4JEwCCLt+khg2wR5e+ln7YgB4I=
+github.com/godev90/orm v0.1.24/go.mod h1:FH/HSEhS1R5yqjjVcWh8Upvfe4jZLcTz+2E7jDfzj98=
 github.com/godev90/validator v0.1.11 h1:hivTw9/qguOZGy4KCuBbNxMn6IFIMNJdeS3qoKgftCQ=
 github.com/godev90/validator v0.1.11/go.mod h1:gwr0LYqjCqykYcXLREmS7plWlpWk+Ii2y47GMsynQEQ=
 github.com/golang/snappy v1.0.0 h1:Oy607GVXHs7RtbggtPBnr2RmDArIsAefDwvrdWvRhGs=
