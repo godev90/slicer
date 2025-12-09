@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 
@@ -145,6 +146,22 @@ func QueryPage[T orm.Tabler](paginator Paginator[T], opts QueryOptions) (PageDat
 		columns := []string{}
 		for _, field := range opts.Select {
 			if col, ok := allowed[field]; ok {
+				columns = append(columns, col)
+			}
+		}
+		if len(columns) > 0 {
+			db = db.Select(columns)
+		}
+	} else {
+		// deterministic order: sort allowed keys then collect their column names
+		keys := make([]string, 0, len(allowed))
+		for k := range allowed {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		columns := make([]string, 0, len(keys))
+		for _, k := range keys {
+			if col, ok := allowed[k]; ok {
 				columns = append(columns, col)
 			}
 		}
